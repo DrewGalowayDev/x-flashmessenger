@@ -317,6 +317,89 @@ const confettiSettings = { spread: 360 };
 luckyBtn.addEventListener('click', () => {
   confetti(confettiSettings);
 });
+/*====take note of this====*/
+    const CACHE_NAME = 'app-cache-v1';
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/styles.css',
+    '/app.js',
+    '/logo.png',
+];
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('Opened cache');
+            return cache.addAll(urlsToCache);
+        })
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
+    );
+});
+
+    /*==========================this is the new cache script*/
+    // Service Worker registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+    .then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    })
+    .catch(function(error) {
+        console.log('ServiceWorker registration failed: ', error);
+    });
+}
+
+// Caching files with Service Worker (inside service-worker.js file)
+
+// LocalStorage for saving data locally
+function saveDataLocally(key, value) {
+    localStorage.setItem(key, value);
+    console.log('Data saved locally: ', key, value);
+}
+
+function getDataLocally(key) {
+    return localStorage.getItem(key);
+}
+
+// Example usage of local storage
+const exampleData = { message: 'Hello from X-Flash Messenger!' };
+saveDataLocally('userMessage', JSON.stringify(exampleData));
+
+// Fetching the saved data later
+const savedMessage = JSON.parse(getDataLocally('userMessage'));
+console.log('Retrieved from LocalStorage:', savedMessage);
+
+// Offline Sync: Detecting when back online
+window.addEventListener('online', () => {
+    console.log('Back online, syncing data...');
+    syncData();
+});
+
+// Simulating sync process
+function syncData() {
+    const unsentData = getDataLocally('userMessage');
+    if (unsentData) {
+        // Send this data to the server (implement this for your scenario)
+        console.log('Syncing data to the server:', JSON.parse(unsentData));
+        // Remove data after sync
+        localStorage.removeItem('userMessage');
+    }
+}
+
+// Check if offline
+if (!navigator.onLine) {
+    console.log('You are offline. Local data will be used.');
+    // Load local data instead of server data here
+}
+
   </script>
+  
 </body>
 </html>
